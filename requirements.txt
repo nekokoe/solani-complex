@@ -1,0 +1,17 @@
+# Python dependencies (core analysis scripts)
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
+scikit-learn>=1.2
+openpyxl>=3.1
+Pillow>=10.0
+
+# R dependencies (plotting/statistics)
+# ggplot2, patchwork, pheatmap, ComplexHeatmap, ggtree, ggalluvial,
+# vegan, pegas, clusterProfiler  — see README and manuscript Methods
+
+# External tools (not pip-installable)
+# mmseqs2 v14.7, kmer-db v1.11.1, KMC v3.2.1, OrthoFinder v2.5.4,
+# EffectorP-3, BLAT, MAFFT v7.487, trimAl, IQ-TREE v2.3.0, FastANI v1.33,
+# ADMIXTURE v1.3.0, PLINK v1.90, VCFtools v0.1.16, ani-typer
