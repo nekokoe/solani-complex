@@ -131,15 +131,22 @@ axa.set_xlim(lim); axa.set_ylim(0, 1.02)
 axa.set_xlabel("Mean 1 \u2212 AUC at 28 \u00b0C (10\u00b3, 10\u2074)")
 axa.set_ylabel("Mean 1 \u2212 AUC at 37 \u00b0C (10\u00b3, 10\u2074)")
 axa.set_title("a  Strain temperature preference", fontsize=8, loc="left")
+# the clinical/environmental counts come off the cohort, never typed in: the panel is
+# plotted from STRAINS and MED, so a literal n goes stale without any error (it still
+# read "n=11" after the cohort had grown to 17 clinical of 21 isolates).
+N_MED = sum(s in MED for s in STRAINS)
+N_ENV = len(STRAINS) - N_MED
 handles = [Line2D([0],[0], marker="o", color="w", markerfacecolor=C_MED, markersize=7,
-                  label="Clinical (n=11)"),
+                  label=f"Clinical (n={N_MED})"),
            Line2D([0],[0], marker="o", color="w", markerfacecolor=C_ENV, markersize=7,
-                  label="Environmental (n=4)"),
+                  label=f"Environmental (n={N_ENV})"),
            Line2D([0],[0], marker="o", color="w", markerfacecolor="none",
                   markeredgecolor=C28, markersize=7, label="28 \u00b0C-biased"),
            Line2D([0],[0], marker="v", color="w", markerfacecolor="none",
                   markeredgecolor=C37, markersize=7, label="37 \u00b0C-biased")]
-axa.legend(handles=handles, fontsize=5.8, loc="lower left", bbox_to_anchor=(0.02, 0.02),
+# upper left, not lower left: both axes run 0-1.02 but the strains sit in
+# x 0.13-0.68 / y 0.10-0.36, so a lower-left legend was drawn on top of the cloud.
+axa.legend(handles=handles, fontsize=5.8, loc="upper left", bbox_to_anchor=(0.02, 0.98),
            ncol=2, columnspacing=0.8, handlelength=1.2)
 
 # ---------------- b: concentration response (unchanged) --------------------
@@ -366,20 +373,47 @@ axf.set_xlabel("VPS1/dynamin copies")
 axf.set_ylabel("1 \u2212 AUC (37 \u00b0C, 10\u00b3)")
 axf.set_title("f  VPS1/dynamin loss \u2192 higher 37 \u00b0C virulence",
               fontsize=7.5, loc="left")
+# headroom above the data (max 1 - AUC = 0.25) so the legend has a band of its own;
+# at the autoscaled limits the strains fill the full height at x = 0 and x = 1 and
+# any in-axes legend lands on them.
+axf.set_ylim(-0.01, 0.34)
 lf2 = [Line2D([0],[0], marker="o", color="w", markerfacecolor=C_MED, markersize=7,
-              label="Clinical"),
+              label=f"Clinical (n={N_MED})"),
        Line2D([0],[0], marker="o", color="w", markerfacecolor=C_ENV, markersize=7,
-              label="Environmental"),
+              label=f"Environmental (n={N_ENV})"),
        Line2D([0],[0], marker="o", color="w", markerfacecolor="none",
               markeredgecolor=C28, markersize=7, label="28 \u00b0C-biased"),
        Line2D([0],[0], marker="v", color="w", markerfacecolor="none",
               markeredgecolor=C37, markersize=7, label="37 \u00b0C-biased")]
-axf.legend(handles=lf2, fontsize=5.8, loc="lower left",
-           bbox_to_anchor=(0.02, 0.02), ncol=2, columnspacing=0.8,
-           handlelength=1.2)
+axf.legend(handles=lf2, fontsize=5.8, loc="upper right", ncol=2,
+           columnspacing=0.8, handlelength=1.2)
 
 fig.subplots_adjust(left=0.055, right=0.945, bottom=0.06, top=0.94,
                     wspace=0.30, hspace=0.34)
+
+# --- legend placement check: a legend must not be drawn over the data ----------
+# "the legend and the content cover each other" is invisible to every other test,
+# so assert it geometrically instead of trusting the corner keyword.
+fig.canvas.draw()
+for _ax, _name in [(axa, "a"), (axf, "f")]:
+    _leg = _ax.get_legend()
+    if _leg is None:
+        continue
+    _lb = _leg.get_window_extent()
+    _hits = []
+    for _c in _ax.collections:
+        _off = _c.get_offsets()
+        if _off is None or len(_off) == 0:
+            continue
+        for _px, _py in _ax.transData.transform(np.asarray(_off, dtype=float)):
+            if _lb.contains(_px, _py):
+                _hits.append(f"mark@({_px:.0f},{_py:.0f})")
+    for _t in _ax.texts:
+        if _t.get_text() and _t.get_window_extent().overlaps(_lb):
+            _hits.append(f"label:{_t.get_text()[:10]}")
+    print(f"[legend] panel {_name}: {len(_hits)} marks/labels under the legend"
+          + (f" -> {_hits[:6]}" if _hits else " (clear)"))
+
 fig.savefig(f"{OUT}/figure_virulence_fig8.pdf", bbox_inches="tight")
 fig.savefig(f"{OUT}/figure_virulence_fig8.png", dpi=300, bbox_inches="tight")
 fig.canvas.draw()
