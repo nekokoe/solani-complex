@@ -2,7 +2,7 @@
 
 Analysis scripts for the manuscript:
 
-> **Genomic analysis of human pathogenicity in the *Fusarium solani* species complex**
+> **The *Fusarium solani* species complex is an environmental opportunist whose clinical adaptation accompanies accessory-chromosome evolution**
 
 Population-genomic and pan-genomic analysis of 211 *Fusarium solani* species complex (FSSC) isolates, including accessory-chromosome characterisation, clinical-association analysis, and experimental virulence testing in a *Galleria mellonella* model.
 
